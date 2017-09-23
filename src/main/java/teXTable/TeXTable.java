@@ -41,10 +41,10 @@ public class TeXTable {
     }
 
     /**
-     * Appends an array of Strings. to the table.
+     * Appends an array of Strings to the table.
      * @param values
      */
-    public void append(String... values) {
+    public void append(String... values) { // ToDo: Needs input validation.
 
         Row row = rowFactory.createRow(tableLayout.getColumnCount());
 

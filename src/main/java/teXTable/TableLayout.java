@@ -9,7 +9,7 @@ package teXTable;
 public class TableLayout {
 
     private int columnCount;
-    private String alignment = "c";
+    private String alignment = "c"; // ToDo: Needs to be able to handle different alignments.
 
     /**
      * Constructs a TableLayout object.
