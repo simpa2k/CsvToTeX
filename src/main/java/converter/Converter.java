@@ -24,7 +24,7 @@ public class Converter {
         }
 
         if (!FilenameUtils.getExtension(pathToCSV).equals("csv")) {
-            throw new IllegalArgumentException("File must have csv extension.");
+            throw new IllegalArgumentException("File must have .csv extension.");
         }
 
         this.pathToCSV = pathToCSV;

@@ -29,11 +29,10 @@ public class Main {
         String outputPath = args[1] + FilenameUtils.getBaseName(pathToCSV) + ".tex";
 
         Converter converter = new Converter(pathToCSV, new TableLayoutFactory(), new TeXTableFactory());
-        String convertedTable;
 
         try {
 
-            convertedTable = converter.convert();
+            String convertedTable = converter.convert();
 
             try {
 
