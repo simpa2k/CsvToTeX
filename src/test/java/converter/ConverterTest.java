@@ -51,6 +51,16 @@ public class ConverterTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void testCreateConverterWithNullTableLayoutFactory() {
+        new Converter(VALID_EXISTENT_FILE, null, mockTeXTableFactory);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateConverterWithNullTeXTableFactory() {
+        new Converter(VALID_EXISTENT_FILE, mockTableLayoutFactory, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void testCreateConverterWithNonCSVFile() {
         new Converter(TXT_FILE, mockTableLayoutFactory, mockTeXTableFactory);
     }
