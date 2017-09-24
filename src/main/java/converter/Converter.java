@@ -1,6 +1,7 @@
 package converter;
 
 import org.apache.commons.io.FilenameUtils;
+import parser.Parser;
 import teXTable.*;
 
 import java.io.IOException;
@@ -18,8 +19,11 @@ public class Converter {
 
     private String pathToCSV;
 
+    private Parser parser;
     private TableLayoutFactory tableLayoutFactory;
     private TeXTableFactory teXTableFactory;
+
+    private List<String[]> lines;
 
     /**
      * Constructs a CSV to TeX tabular environment table converter.
@@ -31,7 +35,10 @@ public class Converter {
      * teXTableFactory is/are null, or if the specified CSV file does not have
      * a .csv extension.
      */
-    public Converter(String pathToCSV, TableLayoutFactory tableLayoutFactory, TeXTableFactory teXTableFactory) {
+    public Converter(String pathToCSV,
+                     Parser parser,
+                     TableLayoutFactory tableLayoutFactory,
+                     TeXTableFactory teXTableFactory) {
 
         if (pathToCSV == null) {
             throw new IllegalArgumentException("Path to CSV may not be null.");
@@ -50,6 +57,7 @@ public class Converter {
         }
 
         this.pathToCSV = pathToCSV;
+        this.parser = parser;
         this.tableLayoutFactory = tableLayoutFactory;
         this.teXTableFactory = teXTableFactory;
 
@@ -57,6 +65,24 @@ public class Converter {
 
     public String getPathToCSV() {
         return pathToCSV;
+    }
+
+    /**
+     * Parses the contents of the CSV file specified at construction.
+     */
+    public void parse() throws IOException {
+
+        Stream<String> stream = Files.lines(Paths.get(pathToCSV));
+        lines = parser.parse(stream);
+
+    }
+
+    /**
+     * Analyzes the underlying table/graph structure and removes redundant
+     * paths.
+     */
+    public void reduce() {
+
     }
 
     /**
@@ -69,11 +95,7 @@ public class Converter {
     public String convert() throws IOException {
 
         Stream<String> stream = Files.lines(Paths.get(pathToCSV));
-
-        /*
-         * Split each line on commas and put the resulting String arrays in a list.
-         */
-        List<String[]> lines = stream.map(line -> line.split(",")).collect(Collectors.toList());
+        List<String[]> lines = parser.parse(stream);
 
         /*
          * Create a TeXTable with a column count equal to that of the first line.

@@ -2,6 +2,7 @@ package main;
 
 import converter.Converter;
 import org.apache.commons.io.FilenameUtils;
+import parser.CsvParser;
 import teXTable.TableLayoutFactory;
 import teXTable.TeXTableFactory;
 
@@ -28,7 +29,7 @@ public class Main {
         String pathToCSV = args[0];
         String outputPath = args[1] + FilenameUtils.getBaseName(pathToCSV) + ".tex";
 
-        Converter converter = new Converter(pathToCSV, new TableLayoutFactory(), new TeXTableFactory());
+        Converter converter = new Converter(pathToCSV, new CsvParser(), new TableLayoutFactory(), new TeXTableFactory());
 
         try {
 

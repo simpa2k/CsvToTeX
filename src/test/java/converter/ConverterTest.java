@@ -2,6 +2,8 @@ package converter;
 
 import org.junit.Before;
 import org.junit.Test;
+import parser.CsvParser;
+import parser.Parser;
 import teXTable.TableLayout;
 import teXTable.TableLayoutFactory;
 import teXTable.TeXTable;
@@ -10,6 +12,8 @@ import teXTable.TeXTableFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -24,14 +28,37 @@ public class ConverterTest {
 
     private String correctlyConvertedFile;
 
+    private CsvParser mockCsvParser;
     private TableLayoutFactory mockTableLayoutFactory;
     private TeXTableFactory mockTeXTableFactory;
+
+    private Converter createConverterWithMockParserAndFactories(String pathToCsv) {
+        return new Converter(pathToCsv, mockCsvParser, mockTableLayoutFactory, mockTeXTableFactory);
+    }
+
+    private Converter createValidConverter() {
+        return createConverterWithMockParserAndFactories(VALID_EXISTENT_FILE);
+    }
+
+    private Converter createConverterWithValidPathAndParser(TableLayoutFactory tableLayoutFactory,
+                                                            TeXTableFactory teXTableFactory) {
+        return new Converter(VALID_EXISTENT_FILE, mockCsvParser, tableLayoutFactory, teXTableFactory);
+    }
+
+    private Converter createConverterWithNullTableLayoutFactory() {
+        return createConverterWithValidPathAndParser(null, mockTeXTableFactory);
+    }
+
+    private Converter createConverterWithNullTeXTableFactory() {
+        return createConverterWithValidPathAndParser(mockTableLayoutFactory, null);
+    }
 
     @Before
     public void setup() throws IOException {
 
         correctlyConvertedFile = new String(Files.readAllBytes(Paths.get(PATH_TO_CORRECTLY_CONVERTED_FILE)));
 
+        mockCsvParser = mock(CsvParser.class);
         mockTableLayoutFactory = mock(TableLayoutFactory.class);
         mockTeXTableFactory = mock(TeXTableFactory.class);
 
@@ -40,35 +67,35 @@ public class ConverterTest {
     @Test
     public void testCreateConverterWithValidPath() {
 
-        Converter converter = new Converter(VALID_EXISTENT_FILE, mockTableLayoutFactory, mockTeXTableFactory);
+        Converter converter = createValidConverter();
         assertEquals(VALID_EXISTENT_FILE, converter.getPathToCSV());
 
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateConverterWithNullPath() {
-        new Converter(null, mockTableLayoutFactory, mockTeXTableFactory);
+        createConverterWithMockParserAndFactories(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateConverterWithNullTableLayoutFactory() {
-        new Converter(VALID_EXISTENT_FILE, null, mockTeXTableFactory);
+        createConverterWithNullTableLayoutFactory();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateConverterWithNullTeXTableFactory() {
-        new Converter(VALID_EXISTENT_FILE, mockTableLayoutFactory, null);
+        createConverterWithNullTeXTableFactory();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateConverterWithNonCSVFile() {
-        new Converter(TXT_FILE, mockTableLayoutFactory, mockTeXTableFactory);
+        createConverterWithMockParserAndFactories(TXT_FILE);
     }
 
     @Test(expected = IOException.class)
     public void testConvertNonExistentFile() throws IOException {
 
-        Converter converter = new Converter(VALID_NON_EXISTENT_FILE, mockTableLayoutFactory, mockTeXTableFactory);
+        Converter converter = createConverterWithMockParserAndFactories(VALID_NON_EXISTENT_FILE);
         converter.convert();
 
     }
@@ -81,14 +108,15 @@ public class ConverterTest {
         TeXTable mockTeXTable = mock(TeXTable.class);
         when(mockTeXTable.getTable()).thenReturn(correctlyConvertedFile);
 
-        when(mockTableLayoutFactory.createTableLayout(4)).thenReturn(mockTableLayout);
-        when(mockTeXTableFactory.createTeXTable(mockTableLayout)).thenReturn(mockTeXTable);
-
         String[] columnHeads = {"", "c1", "c2", "c3"};
         String[] r1 = {"r1", "v1", "v2", "v3"};
         String[] r2 = {"r2", "v4", "v5", "v6"};
 
-        Converter converter = new Converter(VALID_EXISTENT_FILE, mockTableLayoutFactory, mockTeXTableFactory);
+        when(mockCsvParser.parse(any(Stream.class))).thenReturn(Arrays.asList(columnHeads, r1, r2)); // ToDo: That any() matcher might not be the best solution.
+        when(mockTableLayoutFactory.createTableLayout(4)).thenReturn(mockTableLayout);
+        when(mockTeXTableFactory.createTeXTable(mockTableLayout)).thenReturn(mockTeXTable);
+
+        Converter converter = createValidConverter();
         String teXTable = converter.convert();
 
         verify(mockTeXTable).append(columnHeads);
@@ -96,6 +124,29 @@ public class ConverterTest {
         verify(mockTeXTable).append(r2);
 
         assertEquals(teXTable, correctlyConvertedFile);
+
+    }
+
+    @Test
+    public void testParseStep() throws IOException {
+
+        TableLayout mockTableLayout = mock(TableLayout.class);
+
+        TeXTable mockTeXTable = mock(TeXTable.class);
+        when(mockTeXTable.getTable()).thenReturn(correctlyConvertedFile);
+
+        String[] columnHeads = {"", "c1", "c2", "c3"};
+        String[] r1 = {"r1", "v1", "v2", "v3"};
+        String[] r2 = {"r2", "v4", "v5", "v6"};
+
+        when(mockCsvParser.parse(any(Stream.class))).thenReturn(Arrays.asList(columnHeads, r1, r2)); // ToDo: That any() matcher might not be the best solution.
+        when(mockTableLayoutFactory.createTableLayout(4)).thenReturn(mockTableLayout);
+        when(mockTeXTableFactory.createTeXTable(mockTableLayout)).thenReturn(mockTeXTable);
+
+        Converter converter = createValidConverter();
+
+        converter.parse();
+        converter.reduce();
 
     }
 }
