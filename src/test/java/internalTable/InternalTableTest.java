@@ -26,20 +26,31 @@ public class InternalTableTest {
     @Test
     public void testReduction() {
 
-        String[] r1 = {"k", "k", "k", "k", "k", "k", "m", "m", "m", "m", "m", "m"};
-        String[] r2 = {"u", "u", "m", "m", "ä", "ä", "u", "u", "m", "m", "ä", "ä"};
-        String[] r3 = {"s", "l", "s", "l", "s", "l", "s", "l", "s", "l", "s", "l"};
-        String[] r4 = {"abc", "ac", "ab", "a", "b", "", "a", "a", "a", "d", "a", "a"};
+        String[] r1 = {"k"  , "k" , "k" , "k", "k", "k", "m", "m", "m", "m", "m", "m"};
+        String[] r2 = {"u"  , "u" , "m" , "m", "ä", "ä", "u", "u", "m", "m", "ä", "ä"};
+        String[] r3 = {"s"  , "l" , "s" , "l", "s", "l", "s", "l", "s", "l", "s", "l"};
+        String[] r4 = {"abc", "ac", "ab", "a", "b", "" , "a", "a", "a", "d", "a", "a"};
 
         InternalTable internalTable = new InternalTable(Arrays.asList(r1, r2, r3, r4));
         internalTable.reduce();
 
-        String[] rr1 = {"k", "k", "k", "k", "k", "k", "m", "m", "m", "m"};
-        String[] rr2 = {"u", "u", "m", "m", "ä", "ä", "u", "m", "m", "ä"};
-        String[] rr3 = {"s", "l", "s", "l", "s", "l", "*", "s", "l", "*"};
-        String[] rr4 = {"abc", "ac", "ab", "a", "b", "", "a", "a", "a", "d", "a"};
+        String[] rr1 = {"k"  , "k" , "k" , "k", "k", "k", "m", "m", "m", "m"};
+        String[] rr2 = {"u"  , "u" , "m" , "m", "ä", "ä", "u", "m", "m", "ä"};
+        String[] rr3 = {"s"  , "l" , "s" , "l", "s", "l", "*", "s", "l", "*"};
+        String[] rr4 = {"abc", "ac", "ab", "a", "b", "" , "a", "a", "d", "a"};
 
-        assertEquals(Arrays.asList(rr1, rr2, rr3, rr4), internalTable.getTable());
+        ArrayList<String> correctR1 = new ArrayList<>(Arrays.asList(rr1));
+        ArrayList<String> correctR2 = new ArrayList<>(Arrays.asList(rr2));
+        ArrayList<String> correctR3 = new ArrayList<>(Arrays.asList(rr3));
+        ArrayList<String> correctR4 = new ArrayList<>(Arrays.asList(rr4));
+
+        ArrayList<ArrayList<String>> correct = new ArrayList<>();
+        correct.add(correctR1);
+        correct.add(correctR2);
+        correct.add(correctR3);
+        correct.add(correctR4);
+
+        assertEquals(correct, internalTable.getTable());
 
     }
 }
