@@ -1,8 +1,6 @@
 package internalTable;
 
-import java.lang.reflect.Array;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class InternalTable {
@@ -33,6 +31,45 @@ public class InternalTable {
 
     private void reduce(int fromColumn, int toColumn, int row) {
 
+        Collection<ArrayList<Integer>> pathsByValue = pickOutSameNode(fromColumn, toColumn, row);
+
+        for (ArrayList<Integer> paths : pathsByValue) {
+
+            if (paths.size() > 1) {
+
+                if (hasSameEndingPoint(paths)) {
+                    merge(paths, row + 1);
+                } else {
+                    reduce(paths.get(0), paths.get(paths.size() - 1), row + 1);
+                }
+            }
+        }
+    }
+
+    private boolean hasSameEndingPoint(ArrayList<Integer> paths) {
+
+        String previousEndingPoint = null;
+        boolean sameEndingPoint = true;
+
+        for (Integer column : paths) {
+
+            String currentEndingPoint = table.get(table.size() - 1).get(column);
+
+            if (previousEndingPoint == null) {
+                previousEndingPoint = currentEndingPoint;
+            } else if (!previousEndingPoint.equals(currentEndingPoint)) {
+
+                sameEndingPoint = false;
+                break;
+
+            }
+        }
+        return sameEndingPoint;
+
+    }
+
+    private  Collection<ArrayList<Integer>> pickOutSameNode(int fromColumn, int toColumn, int row) {
+
         Map<String, ArrayList<Integer>> pathsByValue = new HashMap<>();
 
         for (int column = fromColumn; column <= toColumn; column++) {
@@ -49,36 +86,8 @@ public class InternalTable {
             pathsByValue.put(currentValue, currentSetOfValues);
 
         }
+        return pathsByValue.values();
 
-        for (ArrayList<Integer> paths : pathsByValue.values()) {
-
-            String previousEndingPoint = null;
-            boolean sameEndingPoint = true;
-
-            for (Integer column : paths) {
-
-                String currentEndingPoint = table.get(table.size() - 1).get(column);
-
-                if (previousEndingPoint == null) {
-                    previousEndingPoint = currentEndingPoint;
-                } else {
-
-                    if (!previousEndingPoint.equals(currentEndingPoint)) {
-                        sameEndingPoint = false;
-                        break;
-                    }
-                }
-            }
-
-            if (sameEndingPoint && paths.size() > 1) {
-                merge(paths, row + 1);
-            } else {
-
-                if (paths.size() > 1) {
-                    reduce(paths.get(0), paths.get(paths.size() - 1), row + 1);
-                }
-            }
-        }
     }
 
     private void merge(ArrayList<Integer> columns, int fromRow) {
@@ -87,10 +96,9 @@ public class InternalTable {
 
         Collections.sort(columns, Comparator.reverseOrder()); // Sort in reverse order so that several indices can be removed without problems with shifting.
 
-        table = new ArrayList<>(table.stream().map(line -> {
+        table = new ArrayList<>(table.stream().peek(line -> {
 
             columns.forEach(column -> line.remove((int) column));
-            return line;
 
         }).collect(Collectors.toList()));
 
