@@ -49,7 +49,6 @@ public class InternalTable {
     private boolean hasSameEndingPoint(ArrayList<Integer> paths) {
 
         String previousEndingPoint = null;
-        boolean sameEndingPoint = true;
 
         for (Integer column : paths) {
 
@@ -58,13 +57,10 @@ public class InternalTable {
             if (previousEndingPoint == null) {
                 previousEndingPoint = currentEndingPoint;
             } else if (!previousEndingPoint.equals(currentEndingPoint)) {
-
-                sameEndingPoint = false;
-                break;
-
+                return false;
             }
         }
-        return sameEndingPoint;
+        return true;
 
     }
 
